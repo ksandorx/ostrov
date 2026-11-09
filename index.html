@@ -2485,7 +2485,8 @@ var BAG_CAP = 300, STASH_MAX = 1000;
         btn('markt', 0, 'Отметить белые') + btn('markt', 1, 'белые и синие') + btn('markt', 2, 'включая жёлтые') + btn('markclr', 0, 'Сбросить') + btn('sellmode', 0, 'Готово');
     } else {
       var nbk = 0; S.bag.forEach(function (q) { if (q.book) nbk++; });
-      $('bagActs').innerHTML = btn('equipbest', 0, 'Одеть лучшее', 'go', S.bag.length < 1) + (nbk ? btn('learnall', 0, 'Изучить все книги (' + nbk + ')', 'go') : '') + btn('sellmode', 1, 'Выбрать для продажи', '', S.bag.length < 1) + btn('sellup', 0, 'Продать белые (' + whites + ')', '', !whites) + btn('sellup', 1, 'Белые и синие (' + blues + ')', '', !blues) + btn('sellup', 2, 'Включая жёлтые (' + yels + ')', '', !yels) + btn('sellup', 9, 'Продать все (' + alls + ')', '', !alls) + btn('markjunk', 0, 'Показать мусор (' + junkPreview()[0] + ')', '', !junkPreview()[0]) + btn('junk', 0, 'Убрать мусор (' + junkPreview()[0] + ')', '', !junkPreview()[0]) + btn('sort', 0, 'Сортировать', '', S.bag.length < 2);
+      var aeOn = !!S.autoM && S.opt.equip !== false;
+      $('bagActs').innerHTML = btn('equipbest', 0, 'Одеть лучшее', 'go', S.bag.length < 1) + btn('autoequip', 0, 'Само одевать лучшее: ' + (aeOn ? 'ВКЛ' : 'ВЫКЛ'), aeOn ? 'go' : '', false) + (nbk ? btn('learnall', 0, 'Изучить все книги (' + nbk + ')', 'go') : '') + btn('sellmode', 1, 'Выбрать для продажи', '', S.bag.length < 1) + btn('sellup', 0, 'Продать белые (' + whites + ')', '', !whites) + btn('sellup', 1, 'Белые и синие (' + blues + ')', '', !blues) + btn('sellup', 2, 'Включая жёлтые (' + yels + ')', '', !yels) + btn('sellup', 9, 'Продать все (' + alls + ')', '', !alls) + btn('markjunk', 0, 'Показать мусор (' + junkPreview()[0] + ')', '', !junkPreview()[0]) + btn('junk', 0, 'Убрать мусор (' + junkPreview()[0] + ')', '', !junkPreview()[0]) + btn('sort', 0, 'Сортировать', '', S.bag.length < 2);
     }
     if (bagFilter === 'stash') $('bagActs').innerHTML = btn('allbag', 0, 'Всё из сундука в рюкзак', 'go', !S.stash.length) + btn('allstash', 0, 'Всё незакреплённое в сундук', '', !S.bag.length) + '<span class="note" style="margin:0">Нажми вещь, затем «В сундук» или «В рюкзак». Закреплённые 🔒 остаются в рюкзаке.</span>';
     else $('bagActs').innerHTML += btn('allstash', 0, 'Всё в сундук', '', !S.bag.length);
@@ -2580,6 +2581,7 @@ var BAG_CAP = 300, STASH_MAX = 1000;
     else if (act === 'markjunk') { sellMode = true; marks = {}; S.bag.forEach(function (q, i) { if (isJunk(q)) marks['b:' + i] = 1; }); toast('Отмечено на продажу. Лишнее можно снять нажатием, затем «Продать выбранные»', '#e0b04a'); }
     else if (act === 'sellup') { var sp = sellPreview(+v); if (sp[0] && sellConfirm('sellup:' + v, sp[0], sp[1])) sellUpTo(+v); }
     else if (act === 'equipbest') equipBest();
+    else if (act === 'autoequip') { var on = !!S.autoM && S.opt.equip !== false; if (on) { S.opt.equip = false; toast('Само одевание выключено: вещи меняешь сам', '#ffd36a'); } else { S.opt.equip = true; if (!S.autoM) S.autoM = true; toast('Само одевание включено: лучшие вещи надеваются сами', '#9be08a'); } saveDirty = true; try { metaKeepAuto(); } catch (e) {} }
     else if (act === 'sellmode') { sellMode = v === '1'; marks = {}; }
     else if (act === 'markt') { marks = {}; S.bag.forEach(function (q, i) { if (!q.lock && q.slot !== 'bagup' && !q.book && q.plus === 0 && q.tier <= +v) marks['b:' + i] = 1; }); }
     else if (act === 'markclr') marks = {};
@@ -8179,8 +8181,10 @@ var BAG_CAP = 300, STASH_MAX = 1000;
   })();
 /* ===== версия игры и «Что нового» ===== */
 (function () {
-  var VERSION = 'v227';
+  var VERSION = 'v229';
   var LOG = [
+    ['v229', '9 ноября 2026', ['В инвентаре кнопка «Само одевать лучшее: ВКЛ/ВЫКЛ»: теперь автоматическое одевание легко выключить']],
+    ['v228', '9 ноября 2026', ['Реклама ВК: кнопка сундука появляется, только когда реклама готова; понятнее сообщение, если рекламы нет']],
     ['v227', '9 ноября 2026', ['Во ВКонтакте: реклама за награду (воскреснуть на месте, ×2 добыча с босса, сундук раз в 10 минут) и изредка между глубинами. На других сайтах рекламы нет']],
     ['v226', '9 ноября 2026', ['На телефонах интерфейс по умолчанию мельче (окна 80%, нижняя панель 70%); настраивается в Меню → Интерфейс, теперь можно уменьшить сильнее', 'Мини-карта и строка Путешествия на телефоне компактнее']],
     ['v225', '9 ноября 2026', ['Рейтинг сил: один ник показывается один раз (лучший результат)', 'Нельзя взять ник, занятый другим игроком', 'Новая вкладка рейтинга «Путешествие»: кто дальше всех ушёл', 'Путешествие: подгрузка мира почти вдвое быстрее, ходьба плавнее']],
@@ -9038,18 +9042,22 @@ var BAG_CAP = 300, STASH_MAX = 1000;
   if (!IN_VK || !window.vkBridge) return;
   var B = window.vkBridge, busy = false, lastInter = Date.now(), chestT = 0, CHEST_CD = 10 * 60 * 1000;
   try { B.send('VKWebAppInit'); } catch (e) {}
-  function pre(fmt) { try { B.send('VKWebAppCheckNativeAds', { ad_format: fmt }).catch(function () {}); } catch (e) {} }
+  var READY = { reward: false, interstitial: false }, lastErr = '';
+  function why(e) { try { var d = e && (e.error_data || e.data || e); return d ? (d.error_reason || d.error_msg || d.reason || JSON.stringify(d).slice(0, 120)) : ''; } catch (x) { return ''; } }
+  function pre(fmt) { try { B.send('VKWebAppCheckNativeAds', { ad_format: fmt }).then(function (d) { READY[fmt] = !!(d && d.result); }).catch(function (e) { READY[fmt] = false; lastErr = why(e); }); } catch (e) {} }
+  setInterval(function () { if (!READY.reward) pre('reward'); if (!READY.interstitial) pre('interstitial'); }, 45000);
   pre('reward'); pre('interstitial');
   function mute(on) { try { if (actx) { if (on) actx.suspend(); else actx.resume(); } } catch (e) {} }
   function show(fmt, ok, fail) {
     if (busy) return; busy = true; var was = S.paused; S.paused = true; mute(true);
     var done = function (r) { busy = false; S.paused = was; mute(false); pre(fmt); if (r) ok && ok(); else fail && fail(); };
-    try { B.send('VKWebAppShowNativeAds', { ad_format: fmt }).then(function (d) { done(!!(d && d.result)); }).catch(function () { done(false); }); } catch (e) { done(false); }
+    READY[fmt] = false;
+    try { B.send('VKWebAppShowNativeAds', { ad_format: fmt }).then(function (d) { done(!!(d && d.result)); }).catch(function (e) { lastErr = why(e); done(false); }); } catch (e) { done(false); }
   }
   var st = document.createElement('style');
   st.textContent = '.vkad{padding:9px 16px;border-radius:12px;font:700 14px var(--font-body);cursor:pointer;border:1px solid #6aa0ff;background:rgba(20,30,60,.94);color:#e8f0ff;box-shadow:0 4px 18px #000a}#vkBoss{position:fixed;left:50%;bottom:250px;transform:translateX(-50%);z-index:46}#vkBoss[hidden],#vkChest[hidden]{display:none}#vkChest{position:fixed;right:10px;bottom:250px;z-index:44;font-size:12.5px;padding:7px 11px}#death .vkad{margin-top:12px;pointer-events:auto}';
   document.head.appendChild(st);
-  function noAd() { toast('Реклама сейчас недоступна, попробуй позже', '#ffb0a0'); }
+  var noAdT = 0; function noAd() { if (Date.now() - noAdT < 4000) return; noAdT = Date.now(); toast('Реклама сейчас недоступна, попробуй позже' + (lastErr ? ' <small style="opacity:.7">(' + String(lastErr).replace(/[<>]/g, '') + ')</small>' : ''), '#ffb0a0'); }
 
   /* 1) воскреснуть на месте */
   var db = document.createElement('button'); db.type = 'button'; db.className = 'vkad'; db.textContent = '📺 Воскреснуть здесь (реклама)'; $('death').appendChild(db);
@@ -9080,7 +9088,7 @@ var BAG_CAP = 300, STASH_MAX = 1000;
   cb.addEventListener('click', function () {
     show('reward', function () { chestT = Date.now(); try { localStorage.setItem('sunset-vkchest', String(chestT)); } catch (e) {} try { for (var i = 0; i < 3; i++) dropItem({ x: player.x, y: player.y, z: player.z, lvl: S.level, dropI: 0 }, 2.5, 0.2 + i * 0.15); giveGold(player.x, player.y + 3, player.z, 40 + 15 * S.level); toast('🎁 Сундук открыт!', '#9ad8ff'); } catch (e) {} }, noAd);
   });
-  setInterval(function () { var w = $('welcome'), c = $('create'); cb.hidden = !(Date.now() - chestT > CHEST_CD && LV && !LV.arena && !S.dead && w && w.hidden && c && c.hidden && (S.level || 1) >= 3); }, 1000);
+  setInterval(function () { var w = $('welcome'), c = $('create'); cb.hidden = !(READY.reward && Date.now() - chestT > CHEST_CD && LV && !LV.arena && !S.dead && w && w.hidden && c && c.hidden && (S.level || 1) >= 3); }, 1000);
 
   /* 4) межстраничная: при переходе на новую глубину, не чаще раза в 5 минут */
   var _sl = startLevel;
