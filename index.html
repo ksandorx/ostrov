@@ -8181,8 +8181,9 @@ var BAG_CAP = 300, STASH_MAX = 1000;
   })();
 /* ===== версия игры и «Что нового» ===== */
 (function () {
-  var VERSION = 'v229';
+  var VERSION = 'v230';
   var LOG = [
+    ['v230', '9 ноября 2026', ['ВК: перед рекламой игра сама выходит из полноэкранного режима (иначе ВК не показывал рекламу); во ВК автозапуск на весь экран выключен']],
     ['v229', '9 ноября 2026', ['В инвентаре кнопка «Само одевать лучшее: ВКЛ/ВЫКЛ»: теперь автоматическое одевание легко выключить']],
     ['v228', '9 ноября 2026', ['Реклама ВК: кнопка сундука появляется, только когда реклама готова; понятнее сообщение, если рекламы нет']],
     ['v227', '9 ноября 2026', ['Во ВКонтакте: реклама за награду (воскреснуть на месте, ×2 добыча с босса, сундук раз в 10 минут) и изредка между глубинами. На других сайтах рекламы нет']],
@@ -9042,6 +9043,7 @@ var BAG_CAP = 300, STASH_MAX = 1000;
   if (!IN_VK || !window.vkBridge) return;
   var B = window.vkBridge, busy = false, lastInter = Date.now(), chestT = 0, CHEST_CD = 10 * 60 * 1000;
   try { B.send('VKWebAppInit'); } catch (e) {}
+  try { localStorage.setItem('sunset-autofs', '0'); var af = document.getElementById('wAutoFs'); if (af) af.checked = false; } catch (e) {}
   var READY = { reward: false, interstitial: false }, lastErr = '';
   function why(e) { try { var d = e && (e.error_data || e.data || e); return d ? (d.error_reason || d.error_msg || d.reason || JSON.stringify(d).slice(0, 120)) : ''; } catch (x) { return ''; } }
   function pre(fmt) { try { B.send('VKWebAppCheckNativeAds', { ad_format: fmt }).then(function (d) { READY[fmt] = !!(d && d.result); }).catch(function (e) { READY[fmt] = false; lastErr = why(e); }); } catch (e) {} }
@@ -9052,7 +9054,10 @@ var BAG_CAP = 300, STASH_MAX = 1000;
     if (busy) return; busy = true; var was = S.paused; S.paused = true; mute(true);
     var done = function (r) { busy = false; S.paused = was; mute(false); pre(fmt); if (r) ok && ok(); else fail && fail(); };
     READY[fmt] = false;
-    try { B.send('VKWebAppShowNativeAds', { ad_format: fmt }).then(function (d) { done(!!(d && d.result)); }).catch(function (e) { lastErr = why(e); done(false); }); } catch (e) { done(false); }
+    var go = function () { try { B.send('VKWebAppShowNativeAds', { ad_format: fmt }).then(function (d) { done(!!(d && d.result)); }).catch(function (e) { lastErr = why(e); done(false); }); } catch (e) { done(false); } };
+    var fs = document.fullscreenElement || document.webkitFullscreenElement;
+    if (fs) { try { var pr = (document.exitFullscreen || document.webkitExitFullscreen).call(document); if (pr && pr.then) pr.then(function () { setTimeout(go, 250); }, function () { go(); }); else setTimeout(go, 300); } catch (e) { go(); } }
+    else go();
   }
   var st = document.createElement('style');
   st.textContent = '.vkad{padding:9px 16px;border-radius:12px;font:700 14px var(--font-body);cursor:pointer;border:1px solid #6aa0ff;background:rgba(20,30,60,.94);color:#e8f0ff;box-shadow:0 4px 18px #000a}#vkBoss{position:fixed;left:50%;bottom:250px;transform:translateX(-50%);z-index:46}#vkBoss[hidden],#vkChest[hidden]{display:none}#vkChest{position:fixed;right:10px;bottom:250px;z-index:44;font-size:12.5px;padding:7px 11px}#death .vkad{margin-top:12px;pointer-events:auto}';
